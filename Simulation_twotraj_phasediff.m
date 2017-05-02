@@ -77,8 +77,8 @@ for j=1:2*Ngam
     plot(1:T,f1,color,'LineWidth',2);
 end
 
-%%%%%%%%%%%%%%%%%%% simulate the phase %%%%%%%%%%%%%%%%%%%%
-% simulate the phase part with random gam function
+%%%%%%%%%%%%%%%%%%% compare using the amplitude and phase %%%%%%%%%%%%%%%%%%%%
+% the distance is set to be d = c1*d_a + c2*d_p
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 %consider the phase difference

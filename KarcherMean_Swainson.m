@@ -16,6 +16,7 @@ TotalN = length(swainson_date);
 
 %Plot Earth
 figure(100);hold on;
+title('Bird migration trajectories')
 globe([],'earth_1600.png');
 arg='100,''yellow'',''fill'',''markeredgecolor'',''black'' ';
 hold on;
@@ -46,24 +47,27 @@ average_path = Euclidean_Mean(path, 1);
 %Calculate the Karcher mean
 [mup,muq,mupath]= KarcherMean(path,'slow');
 
-figure(101);hold on;
+figure(102);hold on;
+title('Karcher mean');
 globe([],'earth_1600.png');
 arg='100,''yellow'',''fill'',''markeredgecolor'',''black'' ';
 hold on;
 plot3(mupath(1,:),mupath(2,:),mupath(3,:),'m','LineWidth',3);
 
 for i=1:N
-     [pathn{i},indx,gam]=Allignp1top2(path{i},mupath);
+     [pathn{i},indx,gam]=alignment_p1_to_p2(path{i},mupath);
 end;
 
 %%%%Figure 102 plots the Karcher mean and 
 % the cross-sectional variance at each point along the Karcher mean
-figure(102);clf;hold on;
+figure(103);clf;hold on;
 globe([],'earth_1600.png');
 arg='100,''yellow'',''fill'',''markeredgecolor'',''black'' ';
 hold on;
 PLOT(mupath,1,'w',3);
-% calculate the convariance and plot the convariance
+title('Karcher mean and variance along the mean')
+
+% calculate the variance along mean and visulize the variance as ellipsoids
 for i=1:T
     muX=mupath(:,i);
     for j=1:N

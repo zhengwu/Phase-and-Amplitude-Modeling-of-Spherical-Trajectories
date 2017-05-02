@@ -10,6 +10,7 @@ close all;
 addpath('./RealData')
 addpath('./PlotEarth')
 addpath('./amplitude_separation')
+addpath('./phase_utility_functions')
 
 load swainson.mat;
 TotalN = length(swainson_date);

@@ -26,6 +26,7 @@ average_path = Euclidean_Mean(path, 1);
 [mup,muq,mupath]= KarcherMean(path,'slow');
 
 figure(100);hold on;
+title('Karcher mean (green)');
 globe([],'earth_1600.png');
 arg='100,''yellow'',''fill'',''markeredgecolor'',''black'' ';
 hold on;
@@ -39,16 +40,17 @@ end;
 
 
 for i=1:N
-     [pathn{i},indx,gam]=Allignp1top2(path{i},mupath);
+     [pathn{i},indx,gam]=alignment_p1_to_p2(path{i},mupath);
 end;
 figure(111);clf;hold on;
+title('Karcher mean and variance along the mean')
 globe([],'earth_1600.png');
 arg='100,''yellow'',''fill'',''markeredgecolor'',''black'' ';
 hold on;
 hold on;
 PLOT(mupath,1,'w',3);
 
-% calculate the convariance and plot the convariance
+% calculate the variance along mean and visulize the variance as ellipsoids
 for i=1:T
     muX=mupath(:,i);
     for j=1:N

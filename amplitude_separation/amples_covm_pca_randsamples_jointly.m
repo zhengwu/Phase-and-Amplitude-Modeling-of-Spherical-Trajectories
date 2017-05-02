@@ -1,14 +1,13 @@
 function [pcapath,mup,muq,mupath]= amples_covm_pca_randsamples_jointly(patharray,str)
-% function for calculating covariance matrices of given trajectories on S2
-% we treat two components jointly in this function
+% function for calculating the covariance matrix of given trajectories on S2.
+% we treat two components jointly in this function, e.g  (s*u_i,w_i) 
 % Input -- patharray: cell type, each cell contain a trajectory with dim = d*T, 
 %                 d is the dimension of the path (usually d = 3),
 %                 T is the # of sampling points on one trajectory
 
 %Output -- mup: the starting point of the mean trajectory
 %       -- muq: the TSRVF of the mean trajectory
-%       -- mupath: the path of the mean trajectory
-%       -- pcapath: the pca direction
+%       -- mupath: The path of the mean trajectory
 
 N = length(patharray);
 [d,T] = size(patharray{1});
@@ -20,6 +19,10 @@ thrdd = 0.02;
 eps = 0.5;
 
 iter = 2;
+
+s = sqrt(T)/10; % s controls the proportion of the variation accounted by the
+% first and second components in the shooting vector. 
+
 
 %transform path to TSRVF
 for i=1:N
@@ -71,6 +74,7 @@ while (iter<maxiter)
     end
     
 end;
+figure(100);title('Evaluation of the mean trajectory');
 
 %calculate the shooting vectors
 for i=1:N
@@ -107,12 +111,11 @@ for i=1:N
 end;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-%%%% perform PCA analysis for epmu and epmw separately 
-%PCA analysis for each shooting components separately 
+%%%% perform PCA analysis for epmu and epmw jointly 
 %first component and second component together
 
 for i=1:N
-vnew_exp_mu_mw(:,i) = [new_epmu(:,i);reshape(new_epmw(:,:,i)',[2*T,1])]; %firt 1:T is x, second 1:T is y;
+vnew_exp_mu_mw(:,i) = [s*new_epmu(:,i);reshape(new_epmw(:,:,i)',[2*T,1])]; %firt 1:T is x, second 1:T is y;
 end
 mu_vnew_exp_mu_mw = zeros(size(mean(vnew_exp_mu_mw,2)));%mean(vnew_epmw,2);
 mu_vnew_exp_mu_mw = mean(vnew_exp_mu_mw,2);
@@ -129,7 +132,7 @@ for i=1:length(tau)
 end
 
 for i=1:length(tau)
-      new_pca_epmu(:,i) = new_pca_epmu_epmw(1:2,i);
+      new_pca_epmu(:,i) = new_pca_epmu_epmw(1:2,i)/s;
       new_pca_epmw(:,:,i) = reshape(new_pca_epmu_epmw(3:end,i),[T,2])';
 end
 
@@ -215,16 +218,18 @@ projected_vnew_expmumw = Um(:,1:9)'*centered_vnew_exp_mu_mw;
 X = projected_vnew_expmumw(1:PCn,:);
 X = X';
 
-GMModel = fitgmdist(X,1,'RegularizationValue',0.1);
-
 % AIC is used to find the number of components 
-% AIC = zeros(1,4);
-% GMModels = cell(1,4);
-% options = statset('MaxIter',1000);
-% for k = 1:4
-%     GMModels{k} = fitgmdist(X,k,'Options',options,'RegularizationValue',0.1);
-%     AIC(k)= GMModels{k}.AIC;
-% end
+AIC = zeros(1,4);
+GMModels = cell(1,4);
+options = statset('MaxIter',1000);
+for k = 1:6
+    GMModels{k} = fitgmdist(X,k,'Options',options,'RegularizationValue',0.1);
+    AIC(k)= GMModels{k}.AIC;
+end
+
+% Select the model bashed on the AIC
+[~,KK] = min(AIC);
+GMModel = fitgmdist(X,KK,'RegularizationValue',0.1);
 
 
 Y = random(GMModel,SN);
@@ -233,7 +238,7 @@ sample_vnew_exp_mu_mw = Um(:,1:PCn)*Y;
 
 for i=1:SN
     sampled_pca_epmu_epmw(:,i) = sample_vnew_exp_mu_mw(:,i);
-    sampled_pca_epmu(:,i) = sampled_pca_epmu_epmw(1:2,i);
+    sampled_pca_epmu(:,i) = sampled_pca_epmu_epmw(1:2,i)/s;
     sampled_pca_epmw(:,:,i) = reshape(sampled_pca_epmu_epmw(3:end,i),[T,2])';
 end;
 
@@ -259,6 +264,8 @@ for i=1:size(sampled_pcapath,3)
     hold on;
     plot3(sampled_pcapath(1,:,i),sampled_pcapath(2,:,i),sampled_pcapath(3,:,i),'y','LineWidth',3);
 end
+
+figure(112);title('Random sampled trajectories');
 
 
 

@@ -32,13 +32,13 @@ X2 = ReSampleSphereTraj(track2,N);
 smoothed_X1=SmoothPath(X1,5,0.6);
 smoothed_X2=SmoothPath(X2,5,0.6);
 
-
+figure(160);clf;
 globe([],'BlueMarble.png');
 arg='100,''yellow'',''fill'',''markeredgecolor'',''black'' ';
 hold on;
 hold on,plot3(smoothed_X1(1,:),smoothed_X1(2,:),smoothed_X1(3,:),'g','LineWidth',3);
 hold on,plot3(smoothed_X2(1,:),smoothed_X2(2,:),smoothed_X2(3,:),'g','LineWidth',3);
-
+title('Two trajectories')
 
 % compare two trajectories without registration
 [dmin5,ind5]=GeodesicsWithoutRegestration(X1,X2,6);

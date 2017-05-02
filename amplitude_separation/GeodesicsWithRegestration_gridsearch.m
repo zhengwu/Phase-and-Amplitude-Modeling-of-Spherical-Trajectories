@@ -97,48 +97,49 @@ if (plotfig>1)
     plot(TotalCost);
     hold on,plot(Part1,'-r','linewidth',3)
     hold on, plot(Part2,'-g','linewidth',3)
-    title('After Registration')
+    title('Grid search result')
 end;
     
-    % Find the optimal \beta
-    [dmin,indx]=min(TotalCost);
-    R=AxisAndAngleRotation(u2,theta(indx));
-    v2R=R*v2;
-    w2R=cross(u2,v2R);w2R=w2R/norm(w2R);
-    f2=[u2,v2R,w2R];
-    A=logm(f2*f1');
-    
-    %compute the baseline
-    for j=1:N
-        B(:,j)=expm((j-1)*A/(N-1))*u1;
-    end
-    
-    %parallel transpot of q1 along \beta to tangent space at u2
+% Find the optimal \beta
+[dmin,indx]=min(TotalCost);
+R=AxisAndAngleRotation(u2,theta(indx));
+v2R=R*v2;
+w2R=cross(u2,v2R);w2R=w2R/norm(w2R);
+f2=[u2,v2R,w2R];
+A=logm(f2*f1');
+
+%compute the baseline
+for j=1:N
+    B(:,j)=expm((j-1)*A/(N-1))*u1;
+end
+
+%parallel transpot of q1 along \beta to tangent space at u2
+for i=1:T
+    q1par(:,i)=ForwardParallelTranslation(B,q1(:,i));
+end
+
+[G,T1] = DynamicProgrammingQ2(q2,t,q1par,t,t,t,0);
+gam = interp1(T1,G,t);
+gamI = invertGamma(gam);
+gamI = (gamI-gamI(1))/(gamI(end)-gamI(1));
+p2n = Group_Action_by_Gamma_p(p2,gamI);
+q2n = path_to_q(p2n);
+
+len=LengthOfTrajectory(B);
+final_dist = sqrt(len^2 + trapz(linspace(0,1,T),  sum( (q1par-q2n).^2 )));
+
+for j=1:N
+    tt=(j-1)/(N-1);
+    qeta=(1-tt)*q1par+tt*q2nh;
     for i=1:T
-        q1par(:,i)=ForwardParallelTranslation(B,q1(:,i));
+        qgeo(:,i)=ForwardParallelTranslation(B(:,end:-1:j),qeta(:,i));
     end
-    
-    [G,T1] = DynamicProgrammingQ2(q2,t,q1par,t,t,t,0);
-    gam = interp1(T1,G,t);
-    gamI = invertGamma(gam);
-    gamI = (gamI-gamI(1))/(gamI(end)-gamI(1));
-    p2n = Group_Action_by_Gamma_p(p2,gamI);
-    q2n = path_to_q(p2n);
-    
-    len=LengthOfTrajectory(B);
-    final_dist = sqrt(len^2 + trapz(linspace(0,1,T),  sum( (q1par-q2n).^2 )));
-    
-    for j=1:N
-        tt=(j-1)/(N-1);
-        qeta=(1-tt)*q1par+tt*q2nh;
-        for i=1:T
-            qgeo(:,i)=ForwardParallelTranslation(B(:,end:-1:j),qeta(:,i));
-        end
-        pgeo(:,:,j)=q_to_path(qgeo,B(:,j));
-    end
+    pgeo(:,:,j)=q_to_path(qgeo,B(:,j));
+end
     
 if (plotfig>0)
     figure(fig_id);
+    title('Geodesic after registration')
     [x,y,z] = sphere(100);
     h=surf(0.99*x,0.99*y,0.99*z) ;
     axis equal off;
@@ -157,6 +158,7 @@ if (plotfig>0)
     end
     figure(fig_id+1)
     plot(gamI,'linewidth',2);
+    title('Phase component')
 end
     
 end;

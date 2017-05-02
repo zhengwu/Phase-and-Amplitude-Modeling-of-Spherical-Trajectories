@@ -105,3 +105,5 @@ for j=3:2:N-2
 newpp=pgeo(:,:,j);
 plot3(newpp(1,:),newpp(2,:),newpp(3,:),'Color',[1 0 1.0*j/N],'LineWidth',3);
 end
+
+figure(fig_id); title('Geodesic without registration');
